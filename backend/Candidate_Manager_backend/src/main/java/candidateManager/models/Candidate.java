@@ -26,7 +26,7 @@ public class Candidate implements Serializable {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
         name = "candidate_skill",
         joinColumns = @JoinColumn(name = "candidate_id"),
