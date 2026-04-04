@@ -1,6 +1,6 @@
 package candidateManager.DTOs;
 
-public class SkillDTO {
+public class SkillDto {
     private int id;
     private String name;
 
