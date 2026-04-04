@@ -102,7 +102,12 @@ public class CandidateServiceImpl implements CandidateService {
     @Override
     @Transactional(readOnly = true)
     public List<CandidateDto> searchBySkills(List<String> skillNames) {
-        return candidateRepository.findAllByAnySkill(skillNames).stream()
+    	
+    		List<String> lowerCaseSkills = skillNames.stream()
+    				.map(String::toLowerCase)
+    				.toList();
+    		
+        return candidateRepository.findAllByAnySkill(lowerCaseSkills).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
     }
