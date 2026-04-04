@@ -1,6 +1,8 @@
 package candidateManager.implementation;
 
-import candidateManager.DTOs.SkillDTO;
+import candidateManager.DTOs.SkillDto;
+import candidateManager.DTOs.SkillUpdateDto;
+import candidateManager.DTOs.SkillCreateDto;
 import candidateManager.models.Skill;
 import candidateManager.repository.SkillRepository;
 import candidateManager.services.SkillService;
@@ -20,7 +22,7 @@ public class SkillServiceImpl implements SkillService {
 
     @Override
     @Transactional
-    public SkillDTO saveSkill(SkillDTO dto) {
+    public SkillDto saveSkill(SkillCreateDto dto) {
         Skill skill = new Skill();
         skill.setName(dto.getName());
         
@@ -29,7 +31,7 @@ public class SkillServiceImpl implements SkillService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<SkillDTO> getAllSkills() {
+    public List<SkillDto> getAllSkills() {
         return skillRepository.findAll().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
@@ -37,21 +39,21 @@ public class SkillServiceImpl implements SkillService {
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<SkillDTO> getSkillById(int id) {
+    public Optional<SkillDto> getSkillById(int id) {
         return skillRepository.findById(id)
                 .map(this::mapToDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<SkillDTO> getSkillByName(String name) {
+    public Optional<SkillDto> getSkillByName(String name) {
         return skillRepository.findByName(name)
                 .map(this::mapToDto);
     }
 
     @Override
     @Transactional
-    public Optional<SkillDTO> updateSkill(int id, SkillDTO dto) {
+    public Optional<SkillDto> updateSkill(int id, SkillUpdateDto dto) {
         return skillRepository.findById(id).map(existingSkill -> {
             existingSkill.setName(dto.getName());
             return mapToDto(skillRepository.save(existingSkill));
@@ -60,7 +62,7 @@ public class SkillServiceImpl implements SkillService {
     
     @Override
     @Transactional(readOnly = true)
-    public List<SkillDTO> searchByPrefix(String prefix) {
+    public List<SkillDto> searchByPrefix(String prefix) {
         return skillRepository.findByPrefix(prefix).stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
@@ -82,8 +84,8 @@ public class SkillServiceImpl implements SkillService {
         return skillRepository.existsById(id);
     }
 
-    private SkillDTO mapToDto(Skill skill) {
-        SkillDTO dto = new SkillDTO();
+    private SkillDto mapToDto(Skill skill) {
+        SkillDto dto = new SkillDto();
         dto.setId(skill.getId());
         dto.setName(skill.getName());
         return dto;
