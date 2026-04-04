@@ -25,7 +25,7 @@ public interface CandidateRepository extends JpaRepository<Candidate, Integer> {
     @Query(value = "SELECT DISTINCT c.* FROM candidate c " +
                    "JOIN candidate_skill cs ON c.id = cs.candidate_id " +
                    "JOIN skill s ON s.id = cs.skill_id " +
-                   "WHERE s.name IN :skillNames", 
+                   "WHERE LOWER(s.name) IN :skillNames", 
            nativeQuery = true)
     List<Candidate> findAllByAnySkill(@Param("skillNames") List<String> skillNames);
 }
