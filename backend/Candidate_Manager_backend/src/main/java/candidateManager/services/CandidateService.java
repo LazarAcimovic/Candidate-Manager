@@ -22,7 +22,7 @@ public interface CandidateService {
 
     List<CandidateDto> searchBySkills(List<String> skillNames);
 
-    Optional<CandidateDto> addSkillToCandidate(int candidateId, int skillId);
+    Optional<CandidateDto> addSkillToCandidate(int candidateId, String skillName);
 
     Optional<CandidateDto> removeSkillFromCandidate(int candidateId, int skillId);
 

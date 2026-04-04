@@ -109,20 +109,23 @@ public class CandidateServiceImpl implements CandidateService {
 
     @Override
     @Transactional
-    public Optional<CandidateDto> addSkillToCandidate(int candidateId, int skillId) {
+    public Optional<CandidateDto> addSkillToCandidate(int candidateId, String skillName) {
         Optional<Candidate> candidateOpt = candidateRepository.findById(candidateId);
-        Optional<Skill> skillOpt = skillRepository.findById(skillId);
 
-        if (candidateOpt.isPresent() && skillOpt.isPresent()) {
+        if (candidateOpt.isPresent()) {
             Candidate candidate = candidateOpt.get();
-            Skill skill = skillOpt.get();
+
+            Skill skill = skillRepository.findByName(skillName)
+                    .orElseGet(() -> skillRepository.save(new Skill(skillName)));
 
             if (!candidate.getSkills().contains(skill)) {
                 candidate.getSkills().add(skill);
                 return Optional.of(mapToDto(candidateRepository.save(candidate)));
             }
+            
             return Optional.of(mapToDto(candidate));
         }
+        
         return Optional.empty();
     }
 

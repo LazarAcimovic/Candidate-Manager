@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/candidate")
+@RequestMapping("/candidates")
 @CrossOrigin
 public class CandidateController {
 
@@ -36,7 +36,7 @@ public class CandidateController {
                 .body("Candidate with requested ID: " + id + " does not exist");
     }
 
-    @PostMapping
+    @PostMapping("/candidate")
     public ResponseEntity<?> createCandidate(@RequestBody CandidateCreateDto dto) {
         CandidateDto savedCandidate = candidateService.saveCandidate(dto);
         URI uri = URI.create("/candidate/id/" + savedCandidate.getId());
@@ -82,14 +82,14 @@ public class CandidateController {
         return ResponseEntity.ok(candidates);
     }
 
-    @PostMapping("/{candidateId}/skill/{skillId}")
-    public ResponseEntity<?> addSkillToCandidate(@PathVariable int candidateId, @PathVariable int skillId) {
-        Optional<CandidateDto> updated = candidateService.addSkillToCandidate(candidateId, skillId);
+    @PostMapping("/{candidateId}/skill/{skillName}")
+    public ResponseEntity<?> addSkillToCandidate(@PathVariable int candidateId, @PathVariable String skillName) {
+        Optional<CandidateDto> updated = candidateService.addSkillToCandidate(candidateId, skillName);
         if (updated.isPresent()) {
             return ResponseEntity.ok(updated.get());
         }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body("Could not add skill. Candidate ID: " + candidateId + " or Skill ID: " + skillId + " not found");
+                .body("Candidate with ID: " + candidateId + " not found");
     }
 
     @DeleteMapping("/{candidateId}/skill/{skillId}")
