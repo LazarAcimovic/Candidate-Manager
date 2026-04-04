@@ -1,24 +1,26 @@
 package candidateManager.services;
 
-import candidateManager.DTOs.SkillDTO;
+import candidateManager.DTOs.SkillCreateDto;
+import candidateManager.DTOs.SkillDto;
+import candidateManager.DTOs.SkillUpdateDto;
 import java.util.List;
 import java.util.Optional;
 
 public interface SkillService {
 
-    SkillDTO saveSkill(SkillDTO dto);
+    SkillDto saveSkill(SkillCreateDto dto);
 
-    List<SkillDTO> getAllSkills();
+    List<SkillDto> getAllSkills();
 
-    Optional<SkillDTO> getSkillById(int id);
+    Optional<SkillDto> getSkillById(int id);
 
-    Optional<SkillDTO> updateSkill(int id, SkillDTO dto);
+    Optional<SkillDto> updateSkill(int id, SkillUpdateDto dto);
 
     boolean deleteSkill(int id);
 
     boolean existsById(int id);
 
-    Optional<SkillDTO> getSkillByName(String name);
+    Optional<SkillDto> getSkillByName(String name);
     
-    List<SkillDTO> searchByPrefix(String prefix);
+    List<SkillDto> searchByPrefix(String prefix);
 }
