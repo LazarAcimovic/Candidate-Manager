@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/skill")
+@RequestMapping("/skills")
 @CrossOrigin
 public class SkillController {
 
@@ -42,7 +42,7 @@ public class SkillController {
         return ResponseEntity.ok(skills);
     }
 
-    @PostMapping
+    @PostMapping("/skill")
     public ResponseEntity<?> createSkill(@RequestBody SkillCreateDto dto) {
         if (skillService.getSkillByName(dto.getName()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
