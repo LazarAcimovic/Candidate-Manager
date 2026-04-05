@@ -36,6 +36,19 @@ const SearchSection = () => {
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && skillInput.trim() !== "") {
+      const found = allSkills.find(
+        (s) => s.name.toLowerCase() === skillInput.toLowerCase(),
+      );
+
+      if (!found) {
+        setSelectedSkills([...selectedSkills, skillInput]);
+        setSkillInput("");
+      }
+    }
+  };
+
   return (
     <div className="search-section">
       <div className="search-inputs-row">
@@ -54,6 +67,7 @@ const SearchSection = () => {
             placeholder="Add skill filter..."
             value={skillInput}
             onChange={handleSkillInput}
+            onKeyDown={handleKeyDown}
           />
           <datalist id="skills-options">
             {allSkills.map((s) => (
