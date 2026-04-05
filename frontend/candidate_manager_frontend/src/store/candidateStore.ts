@@ -6,24 +6,27 @@ interface CandidateState {
   candidates: Candidate[];
   isLoading: boolean;
   error: string | null;
-  
+  nameFilter: string;
+  skillsFilter: string[];
+
   fetchCandidates: () => Promise<void>;
   searchByName: (name: string) => Promise<void>;
   searchBySkills: (skills: string[]) => Promise<void>;
   removeCandidate: (id: number) => Promise<void>;
-  
   clearError: () => void;
 }
 
-export const useCandidateStore = create<CandidateState>((set) => ({
+export const useCandidateStore = create<CandidateState>((set, get) => ({
   candidates: [],
   isLoading: false,
   error: null,
+  nameFilter: "",
+  skillsFilter: [],
 
   clearError: () => set({ error: null }),
 
   fetchCandidates: async () => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, nameFilter: "", skillsFilter: [] });
     try {
       const data = await candidateService.getAll();
       set({ candidates: data, isLoading: false });
@@ -33,46 +36,49 @@ export const useCandidateStore = create<CandidateState>((set) => ({
   },
 
   searchByName: async (name: string) => {
-    if (!name.trim()) {
-      const all = await candidateService.getAll();
-      set({ candidates: all, error: null });
-      return;
-    }
+    set({ nameFilter: name, isLoading: true, error: null });
+    const { skillsFilter } = get();
 
-    set({ isLoading: true, error: null });
     try {
-      const data = await candidateService.searchByName(name);
+      let data: Candidate[];
+      if (skillsFilter.length > 0) {
+        const resultsFromSkills =
+          await candidateService.searchBySkills(skillsFilter);
+        data = resultsFromSkills.filter((c) =>
+          c.fullName.toLowerCase().includes(name.toLowerCase()),
+        );
+      } else if (name.trim()) {
+        data = await candidateService.searchByName(name);
+      } else {
+        data = await candidateService.getAll();
+      }
       set({ candidates: data, isLoading: false });
     } catch (err: any) {
-      set({ 
-        candidates: [], 
-        error: err.response?.status === 404 
-          ? `No candidates found with name containing: ${name}` 
-          : "An error occurred during search", 
-        isLoading: false 
-      });
+      set({ candidates: [], isLoading: false, error: "Search failed" });
     }
   },
 
   searchBySkills: async (skills: string[]) => {
-    if (skills.length === 0) {
-      const all = await candidateService.getAll();
-      set({ candidates: all, error: null });
-      return;
-    }
+    set({ skillsFilter: skills, isLoading: true, error: null });
+    const { nameFilter } = get();
 
-    set({ isLoading: true, error: null });
     try {
-      const data = await candidateService.searchBySkills(skills);
+      let data: Candidate[];
+      if (skills.length > 0) {
+        const resultsFromSkills = await candidateService.searchBySkills(skills);
+        data = nameFilter.trim()
+          ? resultsFromSkills.filter((c) =>
+              c.fullName.toLowerCase().includes(nameFilter.toLowerCase()),
+            )
+          : resultsFromSkills;
+      } else if (nameFilter.trim()) {
+        data = await candidateService.searchByName(nameFilter);
+      } else {
+        data = await candidateService.getAll();
+      }
       set({ candidates: data, isLoading: false });
     } catch (err: any) {
-      set({ 
-        candidates: [], 
-        error: err.response?.status === 404 
-          ? "No candidates found with the specified skills" 
-          : "An error occurred during skill search", 
-        isLoading: false 
-      });
+      set({ candidates: [], isLoading: false, error: "Skill search failed" });
     }
   },
 
@@ -82,15 +88,9 @@ export const useCandidateStore = create<CandidateState>((set) => ({
       await candidateService.delete(id);
       set((state) => ({
         candidates: state.candidates.filter((c) => c.id !== id),
-        isLoading: false
       }));
     } catch (err: any) {
-      set({ 
-        error: err.response?.status === 404 
-          ? `Candidate with ID ${id} could not be found for deletion.` 
-          : "Failed to delete candidate. Please try again.",
-        isLoading: false 
-      });
+      set({ error: "Failed to delete candidate", isLoading: false });
     }
   },
 }));
