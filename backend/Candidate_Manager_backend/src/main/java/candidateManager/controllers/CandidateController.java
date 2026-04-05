@@ -15,7 +15,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/candidates")
-@CrossOrigin
 public class CandidateController {
 
     @Autowired
@@ -101,4 +100,6 @@ public class CandidateController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body("Could not remove skill. Candidate ID: " + candidateId + " or Skill ID: " + skillId + " not found");
     }
+    
+
 }

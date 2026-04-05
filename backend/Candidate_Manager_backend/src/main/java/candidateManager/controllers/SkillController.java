@@ -15,7 +15,6 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/skills")
-@CrossOrigin
 public class SkillController {
 
     @Autowired
