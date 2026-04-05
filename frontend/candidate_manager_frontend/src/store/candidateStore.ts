@@ -26,9 +26,25 @@ export const useCandidateStore = create<CandidateState>((set, get) => ({
   clearError: () => set({ error: null }),
 
   fetchCandidates: async () => {
-    set({ isLoading: true, error: null, nameFilter: "", skillsFilter: [] });
+    const { nameFilter, skillsFilter } = get();
+    set({ isLoading: true, error: null });
+
     try {
-      const data = await candidateService.getAll();
+      let data: Candidate[];
+
+      if (skillsFilter.length > 0) {
+        const results = await candidateService.searchBySkills(skillsFilter);
+        data = nameFilter.trim()
+          ? results.filter((c) =>
+              c.fullName.toLowerCase().includes(nameFilter.toLowerCase()),
+            )
+          : results;
+      } else if (nameFilter.trim()) {
+        data = await candidateService.searchByName(nameFilter);
+      } else {
+        data = await candidateService.getAll();
+      }
+
       set({ candidates: data, isLoading: false });
     } catch (err: any) {
       set({ error: "Failed to load candidates", isLoading: false });

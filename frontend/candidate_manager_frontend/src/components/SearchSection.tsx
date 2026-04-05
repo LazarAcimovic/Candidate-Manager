@@ -4,49 +4,36 @@ import { skillService } from "../services/skillService";
 import type { Skill } from "../models/SkillModel";
 
 const SearchSection = () => {
-  const { searchByName, searchBySkills } = useCandidateStore();
-  const [nameTerm, setNameTerm] = useState("");
+  const { nameFilter, skillsFilter, searchByName, searchBySkills } =
+    useCandidateStore();
+
   const [skillInput, setSkillInput] = useState("");
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
 
   useEffect(() => {
     skillService.getAll().then(setAllSkills).catch(console.error);
   }, []);
 
-  useEffect(() => {
-    const delay = setTimeout(() => searchByName(nameTerm), 300);
-    return () => clearTimeout(delay);
-  }, [nameTerm]);
-
-  useEffect(() => {
-    searchBySkills(selectedSkills);
-  }, [selectedSkills]);
-
-  const handleSkillInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    const found = allSkills.find(
-      (s) => s.name.toLowerCase() === val.toLowerCase(),
-    );
-    if (found && !selectedSkills.includes(found.name)) {
-      setSelectedSkills([...selectedSkills, found.name]);
-      setSkillInput("");
-    } else {
-      setSkillInput(val);
-    }
+  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSkillInput(e.target.value);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && skillInput.trim() !== "") {
-      const found = allSkills.find(
-        (s) => s.name.toLowerCase() === skillInput.toLowerCase(),
-      );
-
-      if (!found) {
-        setSelectedSkills([...selectedSkills, skillInput]);
-        setSkillInput("");
+      const trimmed = skillInput.trim();
+      if (!skillsFilter.includes(trimmed)) {
+        searchBySkills([...skillsFilter, trimmed]);
       }
+      setSkillInput("");
     }
+  };
+
+  const removeSkill = (skill: string) => {
+    searchBySkills(skillsFilter.filter((s) => s !== skill));
+  };
+
+  const clearAll = () => {
+    searchBySkills([]);
   };
 
   return (
@@ -56,8 +43,8 @@ const SearchSection = () => {
           type="text"
           className="search-input"
           placeholder="Search by name..."
-          value={nameTerm}
-          onChange={(e) => setNameTerm(e.target.value)}
+          value={nameFilter}
+          onChange={(e) => searchByName(e.target.value)}
         />
         <div className="input-group">
           <input
@@ -66,7 +53,7 @@ const SearchSection = () => {
             className="search-input"
             placeholder="Add skill filter..."
             value={skillInput}
-            onChange={handleSkillInput}
+            onChange={handleSkillInputChange}
             onKeyDown={handleKeyDown}
           />
           <datalist id="skills-options">
@@ -77,21 +64,15 @@ const SearchSection = () => {
         </div>
       </div>
 
-      {selectedSkills.length > 0 && (
+      {skillsFilter.length > 0 && (
         <div className="active-filters">
-          {selectedSkills.map((s) => (
+          {skillsFilter.map((s) => (
             <span key={s} className="filter-tag">
               {s}
-              <button
-                onClick={() =>
-                  setSelectedSkills(selectedSkills.filter((x) => x !== s))
-                }
-              >
-                ×
-              </button>
+              <button onClick={() => removeSkill(s)}>×</button>
             </span>
           ))}
-          <button className="clear-all" onClick={() => setSelectedSkills([])}>
+          <button className="clear-all" onClick={clearAll}>
             Clear all
           </button>
         </div>
