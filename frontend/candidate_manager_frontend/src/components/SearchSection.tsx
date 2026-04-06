@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useCandidateStore } from "../store/candidateStore";
 import { skillService } from "../services/skillService";
 import type { Skill } from "../models/SkillModel";
@@ -6,25 +6,40 @@ import type { Skill } from "../models/SkillModel";
 const SearchSection = () => {
   const { nameFilter, skillsFilter, searchByName, searchBySkills } =
     useCandidateStore();
-
   const [skillInput, setSkillInput] = useState("");
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     skillService.getAll().then(setAllSkills).catch(console.error);
   }, []);
 
+  const filteredOptions = useMemo(() => {
+    if (!skillInput.trim()) return allSkills;
+    return allSkills.filter(
+      (s) =>
+        s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
+        !skillsFilter.includes(s.name),
+    );
+  }, [allSkills, skillInput, skillsFilter]);
+
   const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSkillInput(e.target.value);
+    setIsDropdownOpen(true);
+  };
+
+  const selectSkill = (skillName: string) => {
+    if (!skillsFilter.includes(skillName)) {
+      searchBySkills([...skillsFilter, skillName]);
+    }
+    setSkillInput("");
+    setIsDropdownOpen(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && skillInput.trim() !== "") {
       const trimmed = skillInput.trim();
-      if (!skillsFilter.includes(trimmed)) {
-        searchBySkills([...skillsFilter, trimmed]);
-      }
-      setSkillInput("");
+      selectSkill(trimmed);
     }
   };
 
@@ -46,21 +61,28 @@ const SearchSection = () => {
           value={nameFilter}
           onChange={(e) => searchByName(e.target.value)}
         />
-        <div className="input-group">
+
+        <div className="custom-select-container">
           <input
-            list="skills-options"
             type="text"
             className="search-input"
             placeholder="Add skill filter..."
             value={skillInput}
             onChange={handleSkillInputChange}
             onKeyDown={handleKeyDown}
+            onFocus={() => setIsDropdownOpen(true)}
+            onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
           />
-          <datalist id="skills-options">
-            {allSkills.map((s) => (
-              <option key={s.id} value={s.name} />
-            ))}
-          </datalist>
+
+          {isDropdownOpen && filteredOptions.length > 0 && (
+            <ul className="custom-dropdown">
+              {filteredOptions.map((s) => (
+                <li key={s.id} onClick={() => selectSkill(s.name)}>
+                  {s.name}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       </div>
 
