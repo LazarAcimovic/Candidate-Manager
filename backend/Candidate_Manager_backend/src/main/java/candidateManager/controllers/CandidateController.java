@@ -3,6 +3,7 @@ package candidateManager.controllers;
 import candidateManager.DTOs.CandidateCreateDto;
 import candidateManager.DTOs.CandidateDto;
 import candidateManager.DTOs.CandidateUpdateDto;
+import candidateManager.repository.CandidateRepository;
 import candidateManager.services.CandidateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,9 @@ import java.util.Optional;
 @RequestMapping("/candidates")
 public class CandidateController {
 
+    @Autowired
+    private CandidateRepository candidateRepository;
+	
     @Autowired
     private CandidateService candidateService;
 
@@ -37,9 +41,14 @@ public class CandidateController {
 
     @PostMapping("/candidate")
     public ResponseEntity<?> createCandidate(@RequestBody CandidateCreateDto dto) {
+        if (candidateRepository.existsByEmail(dto.getEmail())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                                 .body("User with email " + dto.getEmail() + " already exists.");
+        }
+        
         CandidateDto savedCandidate = candidateService.saveCandidate(dto);
-        URI uri = URI.create("/candidate/id/" + savedCandidate.getId());
-        return ResponseEntity.created(uri).body(savedCandidate);
+        return ResponseEntity.created(URI.create("/candidate/" + savedCandidate.getId()))
+                             .body(savedCandidate);
     }
 
     @PutMapping("/id/{id}")

@@ -28,6 +28,9 @@ public class CandidateServiceImpl implements CandidateService {
     @Override
     @Transactional
     public CandidateDto saveCandidate(CandidateCreateDto dto) {
+    	if (candidateRepository.existsByEmail(dto.getEmail())) {
+            return null; 
+        }
         Candidate candidate = new Candidate();
         candidate.setFullName(dto.getFullName());
         candidate.setContactNumber(dto.getContactNumber());
