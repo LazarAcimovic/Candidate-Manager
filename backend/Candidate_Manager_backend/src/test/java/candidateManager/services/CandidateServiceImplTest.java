@@ -231,4 +231,19 @@ class CandidateServiceImplTest {
 
         assertTrue(exists);
     }
+    
+    @Test
+    void testSaveCandidate_EmailAlreadyExists() {
+        CandidateCreateDto dto = new CandidateCreateDto();
+        dto.setEmail("duplicate@example.com");
+        dto.setFullName("Lazar");
+
+        when(candidateRepository.existsByEmail("duplicate@example.com")).thenReturn(true);
+
+        CandidateDto result = candidateService.saveCandidate(dto);
+
+        assertNull(result);
+        verify(candidateRepository, never()).save(any(Candidate.class));
+        verify(skillRepository, never()).save(any());
+    }
 }

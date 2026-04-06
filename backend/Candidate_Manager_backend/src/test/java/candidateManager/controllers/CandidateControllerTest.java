@@ -3,6 +3,7 @@ package candidateManager.controllers;
 import candidateManager.DTOs.CandidateCreateDto;
 import candidateManager.DTOs.CandidateDto;
 import candidateManager.DTOs.CandidateUpdateDto;
+import candidateManager.repository.CandidateRepository;
 import candidateManager.services.CandidateService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,9 @@ class CandidateControllerTest {
 
     @MockBean
     private CandidateService candidateService;
+    
+    @MockBean
+    private CandidateRepository candidateRepository;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -71,7 +75,7 @@ class CandidateControllerTest {
     void testCreateCandidate() throws Exception {
         CandidateCreateDto createDto = new CandidateCreateDto();
         createDto.setFullName("Test");
-        
+        createDto.setEmail("test@gmail.com");     
         CandidateDto savedDto = new CandidateDto();
         savedDto.setId(1);
         savedDto.setFullName("Test");
@@ -82,9 +86,8 @@ class CandidateControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())
-                .andExpect(header().string("Location", "/candidate/id/1"));
+                .andExpect(header().string("Location", "/candidate/1")); 
     }
-
     @Test
     void testUpdateCandidate_Success() throws Exception {
         CandidateUpdateDto updateDto = new CandidateUpdateDto();
@@ -191,4 +194,6 @@ class CandidateControllerTest {
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(containsString("Candidate with ID: 1 not found")));
     }
+    
+    
 }
