@@ -36,7 +36,7 @@ The other half of the fix was making fetchCandidates aware of the store's curren
 The main reason was that storing UI intent locally inside a component always felt like the wrong place for something that needed to survive navigation. Moving it to the global store also cleaned up the component itself. Besides, the filtering logic became reusable across the app rather than being tied to one specific component. It was one of those decisions that felt like extra work upfront but made everything noticeably simpler afterward.
 
 
-##App demo
+## App demo
 
 https://github.com/user-attachments/assets/5492a444-57b1-466d-b6b8-c0cf211c9183
 
