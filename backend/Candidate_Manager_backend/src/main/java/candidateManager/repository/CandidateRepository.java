@@ -28,4 +28,6 @@ public interface CandidateRepository extends JpaRepository<Candidate, Integer> {
                    "WHERE LOWER(s.name) IN :skillNames", 
            nativeQuery = true)
     List<Candidate> findAllByAnySkill(@Param("skillNames") List<String> skillNames);
+    
+    boolean existsByEmail(String email);
 }
