@@ -70,7 +70,11 @@ export const useCandidateStore = create<CandidateState>((set, get) => ({
       }
       set({ candidates: data, isLoading: false });
     } catch (err: any) {
-      set({ candidates: [], isLoading: false, error: "Search failed" });
+      set({
+        candidates: [],
+        isLoading: false,
+        error: "No candidates found with name specified",
+      });
     }
   },
 
