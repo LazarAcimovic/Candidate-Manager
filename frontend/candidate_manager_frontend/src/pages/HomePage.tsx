@@ -24,7 +24,7 @@ const HomePage = () => {
         <SearchSection />
       </div>
 
-      {isLoading && <p className="status-text">Učitavanje...</p>}
+      {isLoading && <p className="status-text">Loading...</p>}
       {error && <div className="error-text">{error}</div>}
 
       {!isLoading && !error && candidates.length === 0 && (
