@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { skillService } from "../services/skillService";
 import { candidateService } from "../services/candidateService";
@@ -8,6 +8,8 @@ const AddCandidatePage = () => {
   const navigate = useNavigate();
   const [allSkills, setAllSkills] = useState<Skill[]>([]);
   const [skillInput, setSkillInput] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -21,39 +23,41 @@ const AddCandidatePage = () => {
     skillService.getAll().then(setAllSkills).catch(console.error);
   }, []);
 
+  const filteredOptions = useMemo(() => {
+    if (!skillInput.trim()) return allSkills;
+    return allSkills.filter(
+      (s) =>
+        s.name.toLowerCase().includes(skillInput.toLowerCase()) &&
+        !formData.skillNames.includes(s.name),
+    );
+  }, [allSkills, skillInput, formData.skillNames]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const addSkill = (name: string) => {
+  const selectSkill = (name: string) => {
     const trimmed = name.trim();
     if (trimmed && !formData.skillNames.includes(trimmed)) {
       setFormData((prev) => ({
         ...prev,
         skillNames: [...prev.skillNames, trimmed],
       }));
-      setSkillInput("");
     }
+    setSkillInput("");
+    setIsDropdownOpen(false);
   };
 
-  const handleSkillSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    const found = allSkills.find(
-      (s) => s.name.toLowerCase() === val.toLowerCase(),
-    );
-
-    if (found) {
-      addSkill(found.name);
-    } else {
-      setSkillInput(val);
-    }
+  const handleSkillInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSkillInput(e.target.value);
+    setIsDropdownOpen(true);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      addSkill(skillInput);
+      selectSkill(skillInput);
     }
   };
 
@@ -66,11 +70,16 @@ const AddCandidatePage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
     try {
       await candidateService.create(formData);
       navigate("/");
-    } catch (err) {
-      alert("Error saving candidate.");
+    } catch (err: any) {
+      if (err.response && err.response.status === 409) {
+        setError(err.response.data);
+      } else {
+        setError("An error occurred while saving the candidate.");
+      }
     }
   };
 
@@ -131,22 +140,28 @@ const AddCandidatePage = () => {
           </div>
 
           <div className="form-group">
-            <label>Skills (select or type new + Enter)</label>
-            <div className="input-group">
+            <label>Skills</label>
+            <div className="custom-select-container">
               <input
-                list="add-skills-options"
                 type="text"
                 className="search-input"
                 placeholder="e.g. React, .NET..."
                 value={skillInput}
-                onChange={handleSkillSelect}
+                onChange={handleSkillInputChange}
                 onKeyDown={handleKeyDown}
+                onFocus={() => setIsDropdownOpen(true)}
+                onBlur={() => setTimeout(() => setIsDropdownOpen(false), 200)}
               />
-              <datalist id="add-skills-options">
-                {allSkills.map((s) => (
-                  <option key={s.id} value={s.name} />
-                ))}
-              </datalist>
+
+              {isDropdownOpen && filteredOptions.length > 0 && (
+                <ul className="custom-dropdown">
+                  {filteredOptions.map((s) => (
+                    <li key={s.id} onClick={() => selectSkill(s.name)}>
+                      {s.name}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
 
             <div
@@ -163,6 +178,23 @@ const AddCandidatePage = () => {
               ))}
             </div>
           </div>
+
+          {error && (
+            <div
+              className="error-banner"
+              style={{
+                color: "#721c24",
+                backgroundColor: "#f8d7da",
+                padding: "10px",
+                borderRadius: "4px",
+                marginBottom: "1rem",
+                border: "1px solid #f5c6cb",
+                fontSize: "0.9rem",
+              }}
+            >
+              {error}
+            </div>
+          )}
 
           <div className="form-actions">
             <button
