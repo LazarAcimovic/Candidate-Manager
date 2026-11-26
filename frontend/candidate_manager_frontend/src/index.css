@@ -95,8 +95,19 @@ body {
   margin-bottom: 2.5rem;
 }
 
-.dashboard-header-stack h1 {
+.dashboard-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+.dashboard-title-row .btn {
+  flex: none;
+}
+
+.dashboard-header-stack h1 {
   font-size: 1.875rem;
   font-weight: 700;
 }
@@ -310,6 +321,11 @@ body {
 
 .btn-primary:hover {
   background-color: var(--primary-hover);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-outline {
