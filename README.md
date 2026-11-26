@@ -181,3 +181,15 @@ Tests are written at two levels:
 https://github.com/user-attachments/assets/5492a444-57b1-466d-b6b8-c0cf211c9183
 
 https://github.com/user-attachments/assets/d62a659f-74cc-4120-b315-5a148f8c023b
+
+---
+
+# Added in Uros's PR
+
+### Empty search results are no longer shown as errors
+
+The search endpoints (`/candidates/search/name` and `/candidates/search/skills`) respond with `404` when no candidate matches. The frontend treated that as a failed request, so a search with no matches showed a red error banner ("Skill search failed" / "No candidates found with name specified") instead of an empty result.
+
+`searchByName` and `searchBySkills` in `src/services/candidateService.ts` now go through a small `searchOrEmpty` helper that converts a `404` into an empty list. The dashboard then shows its regular empty state ("No candidates found matching your filters."). Any other error (server down, `500`, etc.) is still surfaced as an error.
+
+The backend is unchanged. A cleaner long-term fix would be for these endpoints to return `200` with an empty array, which would make the frontend workaround unnecessary.
