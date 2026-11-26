@@ -1,19 +1,5 @@
-import axios from "axios";
 import apiClient from "./apiClient";
 import  type { Candidate, CandidateCreate, CandidateUpdate } from "../models/CandidateModel";
-
-// Search endpoints respond with 404 when nothing matches; treat that as an empty result.
-const searchOrEmpty = async (url: string): Promise<Candidate[]> => {
-  try {
-    const response = await apiClient.get(url);
-    return response.data;
-  } catch (err) {
-    if (axios.isAxiosError(err) && err.response?.status === 404) {
-      return [];
-    }
-    throw err;
-  }
-};
 
 export const candidateService = {
   getAll: async (): Promise<Candidate[]> => {
@@ -40,11 +26,19 @@ export const candidateService = {
     await apiClient.delete(`/candidates/id/${id}`);
   },
 
-  searchByName: (name: string): Promise<Candidate[]> =>
-    searchOrEmpty(`/candidates/search/name?name=${encodeURIComponent(name)}`),
+  searchByName: async (name: string): Promise<Candidate[]> => {
+    const response = await apiClient.get(
+      `/candidates/search/name?name=${encodeURIComponent(name)}`,
+    );
+    return response.data;
+  },
 
-  searchBySkills: (skills: string[]): Promise<Candidate[]> =>
-    searchOrEmpty(`/candidates/search/skills?skillNames=${skills.join(',')}`),
+  searchBySkills: async (skills: string[]): Promise<Candidate[]> => {
+    const response = await apiClient.get(
+      `/candidates/search/skills?skillNames=${skills.join(",")}`,
+    );
+    return response.data;
+  },
 
   addSkill: async (candidateId: number, skillName: string): Promise<Candidate> => {
     const response = await apiClient.post(`/candidates/${candidateId}/skill/${encodeURIComponent(skillName)}`);

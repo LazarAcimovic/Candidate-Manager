@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -141,7 +142,8 @@ class CandidateControllerTest {
         when(candidateService.searchByName("Lazar")).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/candidates/search/name").param("name", "Lazar"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
@@ -157,8 +159,8 @@ class CandidateControllerTest {
         when(candidateService.searchBySkills(anyList())).thenReturn(Collections.emptyList());
 
         mockMvc.perform(get("/candidates/search/skills").param("skillNames", "NonExistent"))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(containsString("No candidates found")));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
     }
 
     @Test
