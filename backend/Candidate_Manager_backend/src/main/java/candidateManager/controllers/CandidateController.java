@@ -71,22 +71,14 @@ public class CandidateController {
     }
 
     @GetMapping("/search/name")
-    public ResponseEntity<?> searchCandidateByName(@RequestParam String name) {
+    public ResponseEntity<List<CandidateDto>> searchCandidateByName(@RequestParam String name) {
         List<CandidateDto> candidates = candidateService.searchByName(name);
-        if (candidates.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No candidates found with name containing: " + name);
-        }
         return ResponseEntity.ok(candidates);
     }
 
     @GetMapping("/search/skills")
-    public ResponseEntity<?> searchCandidateBySkills(@RequestParam List<String> skillNames) {
+    public ResponseEntity<List<CandidateDto>> searchCandidateBySkills(@RequestParam List<String> skillNames) {
         List<CandidateDto> candidates = candidateService.searchBySkills(skillNames);
-        if (candidates.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("No candidates found with the specified skills");
-        }
         return ResponseEntity.ok(candidates);
     }
 
