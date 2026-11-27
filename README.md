@@ -4,6 +4,42 @@ A full-stack HR platform for adding, monitoring, and searching job candidates an
 
 ---
 
+## Local dev quick start
+
+Run the whole backend stack (PostgreSQL + API) with Docker — all commands, in order:
+
+```bash
+docker compose up -d            # start the database and backend
+docker compose logs -f backend  # tail backend logs
+docker compose down             # stop everything
+```
+
+The frontend is run separately:
+
+```bash
+cd frontend/candidate_manager_frontend
+npm install
+npm run dev                     # http://localhost:5173
+```
+
+### Seed sample data
+
+`seed.sql` (repo root) loads a handful of sample candidates and skills and
+**resets** the tables, so it also repairs corrupted local data. It is
+idempotent — run it as often as you like. Load it into the compose database:
+
+**Command Prompt:**
+```cmd
+docker exec -i candidate-manager-db-1 psql -U postgres -d hr_platform < seed.sql
+```
+
+**PowerShell:**
+```powershell
+Get-Content seed.sql | docker exec -i candidate-manager-db-1 psql -U postgres -d hr_platform
+```
+
+---
+
 ## Technology Stack
 
 | Layer                 | Technology                                      |
