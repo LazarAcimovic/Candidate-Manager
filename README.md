@@ -1,5 +1,7 @@
 # Candidate Manager
 
+**Live:** https://frontend-production-dbee021d.up.railway.app
+
 A full-stack HR platform for adding, monitoring, and searching job candidates and their skills, built to streamline a company's recruitment workflow. The core goal was clean CRUD over candidates and skills, plus fast multi-criteria search by name and skill set.
 
 ---
@@ -142,7 +144,7 @@ All endpoints are documented and testable via **Swagger UI** at `http://localhos
 ### Prerequisites
 
 - [JDK 17+](https://adoptium.net/)
-- [Node.js](https://nodejs.org/) 18+
+- [Node.js](https://nodejs.org/) 20+
 - [PostgreSQL](https://www.postgresql.org/)
 
 ### 1. Database
