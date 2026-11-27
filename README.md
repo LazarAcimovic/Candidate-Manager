@@ -10,7 +10,6 @@ Run the whole backend stack (PostgreSQL + API) with Docker — all commands, in 
 
 ```bash
 docker compose up -d            # start the database and backend
-docker compose logs -f backend  # tail backend logs
 docker compose down             # stop everything
 ```
 
