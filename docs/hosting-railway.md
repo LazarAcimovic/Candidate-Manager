@@ -125,6 +125,13 @@ boot (`docs/Tech.md` §3, `docs/DB.md`).
    - **Root Directory**: empty (repo root, where the `Dockerfile` is).
    - **Builder**: Dockerfile (Railway detects the root `Dockerfile`; a
      `railway.toml` can also pin this).
+
+   > **If Builder shows Railpack instead of Dockerfile**: Railway sometimes
+   > defaults to Railpack even when a `Dockerfile` is present. Open
+   > **Settings** -> **Build** -> **Builder** dropdown and select
+   > **Dockerfile** manually. The `railway.toml` at the repo root sets
+   > `builder = "DOCKERFILE"`, but Railway reads it only after a build
+   > attempt, so the first deploy may still use Railpack.
 4. **Variables** tab -> add the following. Use **New Variable** for each;
    the `${{...}}` syntax is Railway's reference to another service's
    variable and is resolved at deploy time.
@@ -166,6 +173,19 @@ from the frontend will still be blocked by CORS until step 5.
 3. **Settings** -> **Root Directory** -> `frontend/candidate_manager_frontend`.
    Railway then builds only that folder with Nixpacks (it detects
    `package.json`, runs `npm install` and the `build` script).
+
+   > **Node version**: Railway's Nixpacks defaults to Node 18, which is too
+   > old for Vite 8 and React Router 7 (both require Node 20+). The
+   > `package.json` already declares `"engines": {"node": ">=20.0.0"}`,
+   > which Nixpacks picks up to select Node 20 automatically. Do not
+   > remove this field.
+
+   > **Build command**: the `railway.toml` inside `frontend/candidate_manager_frontend`
+   > sets `buildCommand = "npm run build"`. Nixpacks runs `npm ci`
+   > automatically in a separate install phase before the build command.
+   > Do not add `npm ci` to `buildCommand` — running it twice causes an
+   > `EBUSY: resource busy or locked` error on `node_modules/.cache`.
+
 4. **Variables** tab -> add:
 
 | Variable            | Value                      |
@@ -230,28 +250,42 @@ If any of these fail, see §7.
 
 ---
 
-## 4. Optional: loading seed data
+## 4. Loading seed data into the production database
 
-The tables are created by Hibernate on first boot and start empty. If the
-repo has a `seed.sql` (see `docs/DB.md` seed section), load it once:
+The tables are created by Hibernate on first boot and start empty. The
+`docker exec` command used for local development does not work in Railway
+— there is no Docker socket to reach. Instead, use Railway's TCP proxy to
+connect directly from your machine with a `psql` client.
 
-1. **RAILWAY**: Postgres service -> **Settings** -> **Networking** ->
-   enable **Public Networking** (TCP proxy). This makes
-   `DATABASE_PUBLIC_URL` usable from your machine.
-2. Copy `DATABASE_PUBLIC_URL` from the Postgres **Variables** tab.
-3. **LOCAL** (requires a `psql` client):
+> Run this **after** the backend has completed its first boot.
+> Hibernate must have created the tables before you can insert rows.
 
-   ```bash
-   psql "<DATABASE_PUBLIC_URL>" -f seed.sql
-   ```
+**RAILWAY**
 
-   Run this **after** the backend has booted once, otherwise the tables
-   do not exist yet.
-4. Afterwards, disable Public Networking again. An open database port
-   with a password is exposure you do not need.
+1. Postgres service -> **Settings** -> **Networking** -> enable
+   **Public Networking** (TCP proxy). This exposes the database on a
+   public host and port.
+2. Copy `DATABASE_PUBLIC_URL` from the Postgres **Variables** tab. It
+   looks like `postgresql://user:pass@host:port/railway`.
 
-Do not put the public URL or password into the repository or into chat
-logs.
+**LOCAL** (requires a `psql` client):
+
+```bash
+psql "<DATABASE_PUBLIC_URL>" -f seed.sql
+```
+
+**PowerShell** (if `psql` reads stdin from a file unreliably):
+
+```powershell
+Get-Content seed.sql | psql "<DATABASE_PUBLIC_URL>"
+```
+
+3. After the seed completes, disable Public Networking again.
+   **Settings** -> **Networking** -> disable Public Networking. An open
+   database port is exposure you do not need once the seed is loaded.
+
+Do not paste `DATABASE_PUBLIC_URL` or its password into chat logs or
+commit it to the repository.
 
 ---
 
@@ -316,3 +350,7 @@ domain are needed.
 | `psql` cannot connect | Public Networking disabled | Enable it temporarily (§4) |
 | Build fails on backend | `Dockerfile` not found or Root Directory set | Root Directory must be empty for the backend service |
 | Build fails on frontend | Root Directory not set | Set it to `frontend/candidate_manager_frontend` |
+| Frontend build fails: `Unsupported engine` / `EBADENGINE` | Railway picked Node 18 instead of 20 | Confirm `"engines": {"node": ">=20.0.0"}` is in `frontend/candidate_manager_frontend/package.json`; Nixpacks reads this field to select the Node version |
+| Frontend build fails: `EBUSY: resource busy or locked, rmdir node_modules/.cache` | `npm ci` is listed twice — once by Nixpacks automatically, once in `buildCommand` | Set `buildCommand = "npm run build"` in `frontend/candidate_manager_frontend/railway.toml`; never add `npm ci` there |
+| Frontend build fails: `npm ci` lock file out of sync | `package-lock.json` does not match `package.json` | Run `npm install` locally, commit the updated `package-lock.json`, and push |
+| Backend service page shows Railpack as builder | Railway ignored `railway.toml` on first deploy | Go to **Settings** -> **Build** -> **Builder** and manually select **Dockerfile**, then redeploy |
