@@ -2,10 +2,18 @@ import { useEffect } from "react";
 import { useCandidateStore } from "../store/candidateStore";
 import SearchSection from "../components/SearchSection";
 import { Link } from "react-router-dom";
+import { csvService } from "../services/csvService";
 
 const HomePage = () => {
-  const { candidates, isLoading, error, fetchCandidates, removeCandidate } =
-    useCandidateStore();
+  const {
+    candidates,
+    isLoading,
+    error,
+    nameFilter,
+    skillsFilter,
+    fetchCandidates,
+    removeCandidate,
+  } = useCandidateStore();
 
   useEffect(() => {
     fetchCandidates();
@@ -20,7 +28,22 @@ const HomePage = () => {
   return (
     <div className="dashboard">
       <div className="dashboard-header-stack">
-        <h1>Candidates Dashboard</h1>
+        <div className="dashboard-title-row">
+          <h1>Candidates Dashboard</h1>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() =>
+              csvService.downloadCandidates(candidates, [
+                nameFilter,
+                ...skillsFilter,
+              ])
+            }
+            disabled={isLoading || candidates.length === 0}
+          >
+            Export CSV ({candidates.length})
+          </button>
+        </div>
         <SearchSection />
       </div>
 
