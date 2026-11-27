@@ -1,0 +1,14 @@
+# Railway — FRONTEND service (Vite SPA, built by Nixpacks).
+#
+# REQUIRED build-time variable — set it in the frontend service's Variables
+# tab BEFORE the first deploy, or the SPA will call localhost:
+#   VITE_API_BASE_URL = <the backend service's public https URL,
+#                        e.g. https://candidate-manager-backend-production.up.railway.app>
+
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm ci && npm run build"
+
+[deploy]
+startCommand = "npx -y serve -s dist -l $PORT"
+restartPolicyType = "ON_FAILURE"

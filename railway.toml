@@ -1,0 +1,17 @@
+# Railway — BACKEND service (Spring Boot, built from the root Dockerfile).
+#
+# Set these in the backend service's Variables tab in Railway. Use the
+# Postgres service's reference variables so credentials stay in sync:
+#   DB_URL      = jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+#   DB_USERNAME = ${{Postgres.PGUSER}}
+#   DB_PASSWORD = ${{Postgres.PGPASSWORD}}
+#   CORS_ALLOWED_ORIGIN = <the frontend service's public https URL>
+# PORT is injected by Railway and read automatically by application.properties.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
