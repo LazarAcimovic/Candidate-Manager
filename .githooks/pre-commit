@@ -1,0 +1,19 @@
+#!/bin/sh
+# .githooks/pre-commit — run check-docs.mjs when docs or the script are staged.
+# Enable once:  git config core.hooksPath .githooks
+
+changed=$(git diff --cached --name-only --diff-filter=ACMR)
+
+echo "$changed" | grep -qE '^(docs/|AGENTS\.md$|CLAUDE\.md$|scripts/check-docs\.mjs$)' || exit 0
+
+if ! command -v node >/dev/null 2>&1; then
+  echo "pre-commit: node not found on PATH; cannot run check-docs.mjs" >&2
+  exit 1
+fi
+
+node scripts/check-docs.mjs
+status=$?
+if [ "$status" -ne 0 ]; then
+  echo "pre-commit: check-docs failed; fix the documents (do not bypass the hook)" >&2
+  exit "$status"
+fi

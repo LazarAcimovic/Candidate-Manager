@@ -284,3 +284,5 @@ sketch
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/java,maven,node,react,visualstudiocode,eclipse
+# Local-only snapshots of superseded docs
+docs/old/
